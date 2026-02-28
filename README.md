@@ -1,4 +1,4 @@
-# x-bookmarks
+# x-bookmarks-triage
 
 Auto-triage your X/Twitter bookmarks using a local LLM. Categorizes each bookmark, flags high-priority posts (quality articles, actionable advice, research breakthroughs), and generates a structured report.
 
@@ -35,11 +35,11 @@ A post is flagged as high priority if it contains genuinely valuable information
 
 There are three scripts, each using a different data source:
 
-| Script | Data source | Auth required | Data quality |
-|---|---|---|---|
-| `triage_free.py` | X Syndication API | None | Full text, metrics, expanded URLs, quoted tweets |
-| `triage_free_oembed.py` | oEmbed API | None | Text only, no metrics |
-| `triage.py` | X API v2 | Bearer Token | Richest -- all metrics, article detection, note_tweet |
+| Script                  | Data source       | Auth required | Data quality                                          |
+| ----------------------- | ----------------- | ------------- | ----------------------------------------------------- |
+| `triage_free.py`        | X Syndication API | None          | Full text, metrics, expanded URLs, quoted tweets      |
+| `triage_free_oembed.py` | oEmbed API        | None          | Text only, no metrics                                 |
+| `triage.py`             | X API v2          | Bearer Token  | Richest -- all metrics, article detection, note_tweet |
 
 **Start with `triage_free.py`** -- it requires no API keys and returns rich data. Use `triage.py` if you have X API v2 access for the most complete results. `triage_free_oembed.py` exists as a fallback if the syndication API stops working.
 
@@ -70,13 +70,19 @@ ollama pull qwen3:14b       # 14B, best quality, ~10GB RAM
 
 ### Bookmarks file
 
-Create a `bookmarks.json` file in the project root containing an array of X/Twitter post URLs:
+Export your bookmarks from X using the included DevTools script:
+
+1. Go to https://x.com/i/bookmarks in your browser
+2. Open DevTools (Cmd+Option+J on Mac, Ctrl+Shift+J on Windows/Linux)
+3. Paste the contents of `export_bookmarks.js` into the Console and press Enter
+4. Wait while it auto-scrolls through all your bookmarks
+5. A `bookmarks.json` file will download automatically when done
+6. Move it to the project root
+
+The file is a JSON array of post URLs:
 
 ```json
-[
-  "https://x.com/user/status/1234567890",
-  "https://x.com/user/status/0987654321"
-]
+["https://x.com/user/status/1234567890", "https://x.com/user/status/0987654321"]
 ```
 
 ### X API v2 setup (optional, for `triage.py` only)
@@ -140,12 +146,12 @@ Results are saved to `triage_results.json` with the following structure:
 
 Performance depends on available RAM (Apple Silicon unified memory or GPU VRAM):
 
-| RAM | Model | Notes |
-|---|---|---|
-| 8GB | `llama3.2` (3B) | Fast, decent quality |
-| 12GB | `qwen3:8b` | Good balance of speed and intelligence |
-| 16GB+ | `qwen3:14b` | Best for structured output / JSON tasks |
-| 32GB+ | `gemma3:27b` | Near-frontier quality |
+| RAM   | Model           | Notes                                   |
+| ----- | --------------- | --------------------------------------- |
+| 8GB   | `llama3.2` (3B) | Fast, decent quality                    |
+| 12GB  | `qwen3:8b`      | Good balance of speed and intelligence  |
+| 16GB+ | `qwen3:14b`     | Best for structured output / JSON tasks |
+| 32GB+ | `gemma3:27b`    | Near-frontier quality                   |
 
 `qwen3:14b` is recommended for this task -- Qwen3 excels at structured JSON output which is exactly what the triage prompt requires.
 
